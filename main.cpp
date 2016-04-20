@@ -1,253 +1,250 @@
 #include <iostream>
-#include <stack>
 #include <fstream>
-#include <vector>
-#include <cstring>
-/**THIS HAS BEEN OFFICIALLY UPDATED**/
+#include <string>
+
 using namespace std;
 
-class BTreeNode
-{
-	public:
-		char Data;
-		BTreeNode *Lchild;  //r or R
-		BTreeNode *Rchild;  //y or Y
-};
+void bubble_sort (int arr[], int n);
+void insertion_sort (int arr[], int length);
+void shell_sort (int ar[], int length);
+void QuickSort (int A[],int low, int high);
+void MergeSort (int A[], int low, int high);
+void Merge (int A[], int low, int high, int mid);
+void ReadFile(string text_file, int myArray[]);
+void Sort(string textfile);
 
-
-/******************************************** CLASSES ADDED *****************************************************/
-/************************************************************************************************
-/ Class BTree. Left Child will be to R/r nodes. Right Child will be to Y/y nodes.
-************************************************************************************************/
-class BTree
-{
-    public:
-        BTreeNode *Root;
-        BTree();
-        bool add_word_to_tree(string word);
-        bool is_word_in_tree(string word);
-        void Inorder(BTreeNode *ptr);
-        int maxDepth(BTreeNode* node);
-    private:
-        bool add_node(BTreeNode *parent, char Data);
-};
-
-/// default constructor for the binary tree class
-BTree::BTree()
-{
-    Root = new BTreeNode;
-    Root->Data='-';
-    Root->Lchild=Root->Rchild=NULL;
-}
-
-/// function will determine if the word is in the tree returning true, else returns false
-bool BTree::is_word_in_tree(string word)
-{
-    int i;
-    BTreeNode *ptr=Root;
-    for(i=0;i<word.length();i++)
-    {
-        if(word[i]=='r' || word[i]=='R')
-        {
-            if(ptr->Lchild==NULL) return false;
-            else ptr=ptr->Lchild;
-        }
-        else if(word[i]=='y' || word[i]=='Y')
-        {
-            if(ptr->Rchild==NULL) return false;
-            else ptr=ptr->Rchild;
-        }
-        else return false;
-    }
-    return true;
-}
-
-/// when a new node needs to be added to the tree, this function is called by add_word_to_tree
-bool BTree::add_node(BTreeNode *parent, char Data)
-{
-    BTreeNode *newNode = new BTreeNode;
-	newNode->Data = Data;
-	newNode->Lchild = newNode->Rchild = NULL;
-	if(Data=='r' || Data=='R') {parent->Lchild=newNode; return true;}
-	if(Data=='y' || Data=='Y') {parent->Rchild=newNode; return true;}
-    return false;
-}
-
-/// function will add a word to the tree in the event that it is a new word
-bool BTree::add_word_to_tree(string word)
-{
-    int i;
-    BTreeNode *ptr=Root;
-    for(i=0;i<word.length();i++)
-    {
-        if(word[i]=='r' || word[i]=='R')
-        {
-            if(ptr->Lchild==NULL)
-            {
-                //add new node
-                add_node(ptr,word[i]);
-                ptr=ptr->Lchild;
-            }
-            else ptr=ptr->Lchild;
-        }
-        else if(word[i]=='y' || word[i]=='Y')
-        {
-            if(ptr->Rchild==NULL)
-            {
-                //add new node
-                add_node(ptr,word[i]);
-                ptr=ptr->Rchild;
-            }
-            else ptr=ptr->Rchild;
-        }
-        else return false;
-    }
-    return true;
-}
-
-
-
-/*********************************************************************************************************************/
-
-//functions supplied in assignment
-bool get_words(char * file_name, vector<string> &w);
-bool get_reads(char * file_name, vector<string> &r);
-bool write_vector_to_screen(vector<string> v);
-bool write_vector_to_file(vector<string> v, char * file_name);
+int exc = 0;
+int comp = 0;
 
 int main()
 {
-    vector<string> words;
-    char * genome_file_name="input1.txt";      //make certain to place this file in the correct folder. Do not change path.
-    if(!get_words(genome_file_name,words))     //will get the words as binary
-        return 1;
-
-    //1. Create a tree --> transforming the vector of words into the tree
-    BTree *b;
-    BTree *test;
-    b=new BTree;
-    test = new BTree;
-    //for(int i=0;i<words.size();i++)
-        //b->add_word_to_tree(words[i]);
-
-    /** TEST 1 -- IS THE TREE CORRECTLY SET UP AND POPULATED **/
-    cout << "If you get two ones, then that means the tree is correctly set up and populated." << endl;
-    cout << "Is the word correctly added?\n" << test->add_word_to_tree("RYRY") << endl;
-    cout << "Is the word in the tree?\n" << test->is_word_in_tree("RYRY") << endl;
-
-    vector<string> reads;
-    char * reads_file_name="input2.txt";       //make certain to place this file in the correct folder. Do not change path.
-    if(!get_reads(reads_file_name,reads))      //will get the reads as binary
-        return 1;
-
-    //2. for each read, map it through the tree. If it follows a path in the tree, this read belongs to this genome.
-    bool *is_in=new bool [reads.size()];
-    for(int i=0;i<reads.size();i++)
-        is_in[i]=b->is_word_in_tree(reads[i]);
-
-    /** TEST 2 -- IS THE TREE CORRECTLY SEARCHED **/
-    cout << "This sequence should not be in the tree (should get 0)\n" << test->is_word_in_tree("RYRYRY") << endl;
-    cout << "Now we should get 1 because we added RYRYRY to the tree\n" << test->add_word_to_tree("RYRYRY") << endl;
-    cout << "Check if the sequence RYRYRY is there\n" << test->is_word_in_tree("RYRYRY") << endl;
-    cout << "Add the same word to the tree again to test\n" << test->is_word_in_tree("RYRYRY")<<endl;
-
-    delete is_in;
-
+    Sort("FewUnique.txt");
+    Sort("NearlySorted.txt");
+    Sort("Random.txt");
+    Sort("Reversed.txt");
+    cout << "Hello world!" << endl;
+    return 0;
 }
 
-
-/*******************************************************************************
-This function takes the genome file name to read and reads all overlapping
-words of size 10 that are present in the file and stores each word in a vector.
-The vector is passed to this function as a parameter -- by reference such
-that the calling function has access to the vector of words.
-*******************************************************************************/
-bool get_words(char * file_name, vector<string> &w)
+void bubble_sort (int arr[], int n)
 {
-    int i,j;
-    int len=0;
-    ifstream in;
-    in.open(file_name);
-    if(!in.is_open()) {cout << "The genome file could not be opened. Check the location.\t"; return false;}
-
-    char * word=new char [11];                              //this is a default, we'll be looking at words of size 10
-    while(in.peek()!=EOF) {in>>word[0]; len++;}             //gets the length of the sequence
-    in.clear(); in.close(); in.open(file_name);             //have to close and reopen file to reset filestream to beginning of file
-
-    for(i=0; i<10; i++)
-    {
-        in>> word[i];
-        if(word[i]<97) word[i]+=32;     //makes it lowercase
-        if(word[i]=='a' || word[i]== 'g') word[i]='r';  //purine
-        else word[i]='y';   //pyrimidine
-    }
-    word[10]='\0';
-    w.push_back(word);
-    for(i=1; i<(len-10-1); i++)   //read until the end of the file
-    {
-        //shift
-        for(j=0; j<9; j++) word[j]=word[j+1];
-        in>> word[9];
-        if(word[9]<97) word[9]+=32;     //makes it lowercase
-        if(word[9]=='a' || word[9]== 'g') word[9]='r';  //purine
-        else word[9]='y';   //pyrimidine
-        word[10]='\0';
-        //strcpy(w[i],word);
-        //cout << i << "\t" << word << endl; cout.flush();
-       w.push_back(word);
-    }
-    in.clear(); in.close();
-
-    return true;
-}
-
-/*******************************************************************************
-This function takes the reads file name to read and reads each individual word
-in the file and stores each word in a vector.
-The vector is passed to this function as a parameter -- by reference such
-that the calling function has access to the vector of words.
-*******************************************************************************/
-bool get_reads(char * file_name, vector<string> &r)
-{
-    int i;
-    ifstream in;
-    in.open(file_name);
-    if(!in.is_open()) {cout << "The read file could not be opened. Check the location.\t"; return false;}
-
-    char * word=new char [20];                              //this is a default, we'll be looking at words of size 10
-
-    while(in.peek()!=EOF)
-    {
-        in.getline(word,20,'\n');
-        for(i=0; i<10; i++) {if(word[i]<97) word[i]+=32;}     //makes it lowercase
-        for(i=0; i<10; i++)
-        {
-            if(word[i]=='a' || word[i]== 'g') word[i]='r';  //purine
-            else word[i]='y';   //pyrimidine
+    int counter;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n - i - 1; ++j) {
+            comp++;//a comparison is being made before this if statement
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+                exc++; //because the if statement was satisfied
+            }
         }
-        r.push_back(word);
     }
-    in.clear(); in.close();
-    delete word;
-    return true;
 }
 
-bool write_vector_to_screen(vector<string> v)
+void insertion_sort (int arr[], int length)
 {
-    int i;
-    for(i=0; i<v.size(); i++)
-        cout << v[i] << endl;
-    return true;
+    int j, temp;
+	for (int i = 0; i < length; i++){
+		j = i;
+		while (j > 0 && arr[j] < arr[j-1]){
+		    temp = arr[j];
+            arr[j] = arr[j-1];
+            arr[j-1] = temp;
+            j--;
+            exc++;
+            comp++;//an comparison and exchange is made each time the while loop is satisfied
+        }
+        comp++;// even when the while loop condition is not satisfied, the comparison is still made
+    }
 }
 
-bool write_vector_to_file(vector<string> v, char * file_name)
+void shell_sort (int A[], int length)
 {
-    ofstream out;
-    out.open(file_name);
-    int i;
-    for(i=0; i<v.size(); i++)
-        out << v[i] << endl;
-    out.clear();
-    out.close();
-    return true;
+    int temp, gap, i;
+    int swapped;
+    gap = length/2;
+    do
+    {
+        do
+        {
+            swapped = 0;
+            for(i = 0; i < length-gap; i++){
+                comp++; //again, comparison is made before this conditional
+                if (A[i] > A[i + gap]) {
+                    temp = A[i];
+                    A[i] = A[i+gap];
+                    A[i+gap] = temp;
+                    swapped = 1;
+                    exc++;//an exchange was made because the if statement was satisfied
+                }
+            }
+        }while (swapped == 1);
+    } while ((gap = gap/2) >= 1);
+}
+
+void Swap (int &x, int &y)//basic swap function
+{
+    int temp;
+    temp = x;
+    x = y;
+    y = temp;
+}
+
+
+ int Partition (int A[], int low, int high)
+ {
+     int j = low;
+     int pivot = A[low];
+     for (int i = low+1; i<= high; i++)
+     {
+         comp++;//a comparison is made before the if statement which is the first array element
+         if (A[i] <= pivot)
+         {
+             j++;
+             Swap (A[i],A[j]);
+             exc++;//exchange made after the swap
+         }
+     }
+     Swap (A[j],A[low]);
+     exc++;// add an exchange because two numbers were swapped with the swap function
+     return j;
+ }
+
+void QuickSort (int A[],int low, int high)
+{
+    int k;
+    if (low < high)
+    {
+        k = Partition (A,low,high);
+        QuickSort(A,low,k-1);
+        QuickSort(A,k+1,high);
+    }
+}
+
+void MergeSort (int A[], int low, int high)
+{
+    int mid;
+    if (low < high)
+    {
+        mid = (low + high)/2;
+        MergeSort(A,low,mid);
+        MergeSort(A,mid+1,high);
+        Merge(A,low,high,mid);
+    }
+}
+
+void Merge (int A[], int low, int high, int mid)
+{
+    int i,j,k, C[10000];
+    i = low;            //index for the first part
+    j = mid +1;         //index for second part
+    k = 0;              //index for array C
+    while ((i <= mid) && (j <= high))       //merge arrays A & B in array C
+    {
+        comp++;// comparison is about to be made with the if statement
+        if (A[i] < A[j]) {
+            C[k] = A[i++];
+            exc++;//exchange is being made because of the equal sign
+        }
+        else {
+            C[k] = A[j++];
+            exc++;//same as previous comment
+        }
+        k++;
+    }
+    while (i <=mid) {
+        exc++;//exchange is made every time the while loop condition is satisfied
+        C[k++] = A[i++]; }
+    while (j <= high) {
+        exc++; // same as previous comment
+        C[k++] = A[j++]; }
+    for (i = low, j =0; i <= high; i++, j++)        //copy array C contents back to array A
+    {
+        A[i] = C[j];
+    }
+
+}
+
+void ReadFile(string text_file, int myArray[])
+{
+    ifstream in (text_file.c_str());
+    if (in.is_open()) {
+        for (int i = 0; i < 6; i++) //fill array with integers  from file
+        {
+            in >> myArray[i];
+        }
+    } else {
+        cout << "File path is invalid." << endl;
+    }
+    in.clear();
+    in.close();
+}
+
+void Sort(string textfile)
+{
+    cout << "For text file: " << textfile << endl;
+    int a[10000];
+    int bubble_sort_comparisons = 0;
+    int bubble_sort_exchanges = 0;
+    int insertion_sort_comparisons = 0;
+    int insertion_sort_exchanges = 0;
+    int shell_sort_comparsions = 0;
+    int shell_sort_exchanges = 0;
+    int merge_sort_exchanges = 0;
+    int merge_sort_comparsions = 0;
+
+    ReadFile(textfile, a);
+    bubble_sort(a, 10000);
+
+    bubble_sort_comparisons = comp;
+    bubble_sort_exchanges = exc;
+    exc = 0;
+    comp = 0;
+
+    ReadFile(textfile, a);
+    insertion_sort(a, 10000);
+
+    insertion_sort_comparisons = comp;
+    insertion_sort_exchanges = exc;
+    exc = 0;
+    comp = 0;
+
+    ReadFile(textfile, a);
+    shell_sort(a, 10000);
+
+    shell_sort_comparsions = comp;
+    shell_sort_exchanges = exc;
+    exc = 0;
+    comp = 0;
+
+    ReadFile(textfile, a);
+    MergeSort(a, 0, 9999);
+    merge_sort_comparsions = comp;
+    merge_sort_exchanges = exc;
+    exc = 0;
+    comp = 0;
+
+    ReadFile(textfile, a);
+    QuickSort(a, 0, 9999);
+
+    cout << "Quick sort comparisons: " << comp << endl;
+    cout << "Quick sort exchanges: " << exc << endl;
+    exc = 0;
+    comp = 0;
+
+    cout << "Merge sort comparisons: " << merge_sort_comparsions << endl;
+    cout << "Merge sort exchanges: " << merge_sort_exchanges << endl;
+
+    cout << "Shell sort comparisons: " << shell_sort_comparsions << endl;
+    cout << "Shell sort exchanges: " << shell_sort_exchanges << endl;
+
+    cout << "Insertion sort comparisons: " << insertion_sort_comparisons << endl;
+    cout << "Insertions sort exchanges: " << insertion_sort_exchanges << endl;
+
+    cout << "Bubble sort comparisons: " << bubble_sort_comparisons << endl;
+    cout << "Bubble sort exchanges: " << bubble_sort_exchanges << endl;
+    cout << "\n";
+
+
 }
