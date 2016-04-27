@@ -1,0 +1,159 @@
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <fstream>
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
+
+using namespace std;
+
+struct HashNode
+{
+    string SSN = "";
+    bool full = false;
+};
+
+struct HashTable
+{
+    int s; //s holds the size of the table
+    HashNode *table;
+};
+
+HashTable* initialize_table(int sz);
+int Find_Key(int key, HashTable *htable, int input_value);
+HashTable* Rehash_Table(HashTable *htable);
+void Insert_Value(string key, HashTable *htable, int input_value);
+void Print_table_to_file(HashTable *htable, string outputFile);
+void Readfile(vector<string> &reads, string filename);
+int extraction_method(string number);
+int main()
+{
+    int mx;
+    string filename = "everybodys_socials.txt";
+    vector<string> reads;
+    Readfile(reads, filename);
+    cout << "Enter a number between 1 and 450 million. ";
+    cin >> mx;
+
+    while (mx < 1 || mx > 450000000) { //make sure number is between 1 and 450 million
+        cout << "Enter a number between 1 and 450 million. ";
+        cin >> mx;
+    }
+
+    HashTable *htable;
+    htable = initialize_table(71000); //initialize table to 71k because there will be no values greater than this
+    int i = 0;
+
+    while (!reads.empty()) {
+        string SN = reads.back();
+        Insert_Value(SN, htable, mx); //insert the string into the hash table
+        reads.pop_back();
+        i++;
+        cout << i << endl;
+    }
+
+    string outputFile = "hashed_socials.txt";
+    Print_table_to_file(htable, outputFile);
+    cout << "Hello world!" << endl;
+    return 0;
+}
+
+//Read the comma delimited file into a vector of strings
+void Readfile(vector<string> &reads, string filename)
+{
+    ifstream infile;
+    int i=0;
+    char line[15];
+    infile.open (filename, in);
+    if (infile.is_open()) {
+        while (infile.peek() != EOF) {
+            infile.getline(line, 256, ',');
+            reads.push_back(line);
+            i++;
+        }
+        infile.close();
+    } else {
+        cout << "Error opening file";
+    }
+}
+
+//since we know that the key is the third, fifth, 7th and 8th digits from the SSN, this function is easy
+int extraction_method(string number)
+{
+    int key = 0;;
+    char k[5]; //four spaces to hold the four digit key;
+    k[0] = number[2];
+    k[1] = number[4];
+    k[2] = number[6];
+    k[3] = number[7];
+    key = atoi(k);
+    return key;
+}
+
+//this function initializes a new hash table
+HashTable* initialize_table(int sz)
+{
+    HashTable *htable = new HashTable;
+    htable->s = sz;
+    htable->table = new HashNode [htable->s];
+    if (htable->table == NULL)
+    for (int i = 0; i < htable->s; i++)
+    {
+        htable->table[i].full = false; // set each hash to false, meaning that it is empty and "" because there is no string associated with it
+        htable->table[i].SSN = "";
+    }
+    return htable;
+}
+
+int Find_Key(string key, HashTable *htable, int input_value)
+{
+    int pos = extraction_method(key); //get the key from the extraction method
+    int c = 0;
+    while (htable->table[pos].full == true) //while the position is full
+    {
+        pos = (pos + (input_value + c) * (input_value+ c)) % htable->s; //perform quadratic probing and create a new potential position
+        c++;
+    }
+    return pos;
+}
+
+//insert a key at a position of the hash table
+void Insert_Value(string key, HashTable *htable, int input_value)
+{
+    int pos = Find_Key(key, htable, input_value);
+    if (htable->table[pos].full == false) //if the position is empty, switch it to full and place the key value there
+    {
+        htable->table[pos].full = true;
+        htable->table[pos].SSN = key;
+    } else {                               //the position is full so find another position
+        Find_Key(key, htable, input_value);
+    }
+}
+
+//print the table to the file so that the last number has no comma
+void Print_table_to_file(HashTable *htable, string outputFile)
+{
+    ofstream output (outputFile);
+    if (output.is_open()) {
+        output << "Hashed socials: \n\n";
+        for (int i = 0; i < htable->s -1; i++)
+        {
+            string value = htable->table[i].SSN;
+            if (value == "")
+                output << 0 << ",";
+            else
+                output<< value << ",";
+        }
+        if (htable->table[htable->s - 1].SSN == "") //write out the last value of the table to there is no comma after it
+            output << 0;
+        else
+            output << htable->table[htable->s - 1].SSN;
+    } else {
+        cout << "Output file cannot be found." << endl;
+    }
+    output.clear();
+    output.close();
+}
